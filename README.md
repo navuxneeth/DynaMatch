@@ -2,7 +2,10 @@
 
 A browser-based tool that takes numerical and categorical data (from a CSV/XLSX file or pasted text) and generates an interactive UI. Users can manipulate sliders and options to explore the relationships within the data, find the closest matching preset, and discover new data combinations through real-time interpolation.
 
-*Screenshot:*
+*Working Screenshots:*
+<img width="1300" height="913" alt="image" src="https://github.com/user-attachments/assets/3531f383-b479-4bcb-add5-ba7a517b2309" />
+<img width="1275" height="808" alt="image" src="https://github.com/user-attachments/assets/0b74ac45-6170-490d-a5e5-f5253485fc25" />
+<img width="1539" height="891" alt="image" src="https://github.com/user-attachments/assets/edd20a5e-d641-4b0d-b34c-e9b904146dbe" />
 
 
 ## Features
@@ -63,6 +66,6 @@ Since this is a self-contained HTML file with no server-side dependencies, you c
 
 ## Acknowledgments
 
--   Built by Navaneeth Sankar K P.
+-   Built by Navaneeth Sankar K P (https://www.linkedin.com/in/navaneeth-sankar-k-p) .
 -   Uses [PapaParse.js](https://www.papaparse.com/) for CSV parsing.
 -   Uses [SheetJS (xlsx.js)](https://sheetjs.com/) for Excel file parsing.
