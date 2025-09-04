@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic Data Interpolation Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: rgb(254, 244, 232);
+            --text-color: rgb(27, 41, 64);
+            --primary-color: rgb(239, 137, 131);
+            --secondary-color: rgb(67, 111, 133);
+            --light-gray: #f0f0f0;
+            --medium-gray: #ccc;
+            --dark-gray: #333;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            text-transform: uppercase;
+        }
+
+        /* --- View Containers --- */
+        .view {
+            padding: 20px;
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #interactiveView {
+            max-width: 1200px;
+            padding: 10px;
+            background: transparent;
+            box-shadow: none;
+            margin-top: 10px;
+        }
+
+        /* --- Input & Config View Styling --- */
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; color: var(--secondary-color); margin-bottom: 25px;}
+
+        .input-section {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .input-box {
+            flex: 1;
+            padding: 20px;
+            border: 2px dashed var(--medium-gray);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        textarea#pasteArea {
+            width: 95%;
+            height: 200px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--medium-gray);
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        button.action-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto 0;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background: var(--primary-color);
+            color: #fff;
+            text-transform: uppercase;
+            transition: background-color 0.3s;
+        }
+        button.action-btn:hover {
+            background-color: #e56a62;
+        }
+        button.action-btn:disabled {
+            background-color: var(--medium-gray);
+            cursor: not-allowed;
+        }
+        
+        #file-upload-label {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #file-upload-label:hover {
+            opacity: 0.9;
+        }
+        #fileInput { display: none; }
+        #fileName {
+            margin-top: 10px;
+            font-style: italic;
+            color: var(--dark-gray);
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .config-item label { font-weight: 500; }
+        .config-item select {
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid var(--medium-gray);
+        }
+
+        #error-message {
+            color: red;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+
+        /* --- Interactive Tool Styling --- */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 40px); /* Adjusted for padding */
+            gap: 20px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .left-column, .right-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            border-radius: 5px;
+            box-sizing: border-box;
+            max-height: 100%;
+            min-height: 0; /* Fix for flexbox shrinking */
+        }
+
+        .slider-section, #behaviourControls {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            min-height: 0;
+        }
+
+        .left-footer {
+            flex-shrink: 0; /* Prevent footer from shrinking */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        .left-footer-text {
+            width: 100%; /* Changed from 50% */
+            margin: 5px;
+            display: flex;
+            flex-direction: column;
+            height: auto; /* Changed from fixed 220px */
+        }
+        
+        .breed-name-display {
+            display: block;
+            font-size: 1.8em;
+            color: var(--primary-color);
+            line-height: 1.2;
+        }
+        
+        .controls {
+            text-align: left;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .slider-container, .behaviour-row {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        .control-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .control-value {
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+            --value-percent: 0%;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 8px;
+            background: linear-gradient(to right, var(--secondary-color) 0%, var(--secondary-color) var(--value-percent), var(--medium-gray) var(--value-percent), var(--medium-gray) 100%);
+            border-radius: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            margin-top: -8px;
+        }
+        input[type="range"]:focus { outline: none; }
+
+        .option-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .option {
+            flex: 1;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid var(--secondary-color);
+            border-radius: 3px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 12px;
+            color: var(--text-color);
+        }
+
+        .option.selected {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        button#lockToggle {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            background: transparent;
+            text-transform: uppercase;
+        }
+
+        #lockToggle.off {
+            border: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        #lockToggle.on {
+            background: var(--secondary-color);
+            color: #fff;
+            border: 1px solid var(--secondary-color);
+        }
+
+        /* Footer Credit */
+        .footer-credit {
+            text-align: center;
+            margin: 20px auto;
+            font-size: 12px;
+            color: var(--dark-gray);
+            width: 100%;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 860px) {
+            html, body {
+                height: auto;
+                min-height: 100vh;
+            }
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .left-column, .right-column {
+                max-height: none;
+            }
+            .slider-section, #behaviourControls {
+                max-height: 50vh;
+            }
+            .left-footer {
+                position: static;
+                margin-top: 15px;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .left-footer-text {
+                width: 95%;
+                height: auto;
+                align-items: center;
+                text-align: center;
+            }
+            .controls { text-align: center; }
+            
+            /* FIX: Center align input view on mobile */
+            .input-section { 
+                flex-direction: column;
+                align-items: center; /* Center the boxes */
+            }
+            .input-box {
+                width: 90%; /* Control width */
+                max-width: 450px;
+                flex: none; /* Reset flex properties */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5em; }
+            h2 { font-size: 1.2em; }
+            .view { margin: 20px auto; padding: 15px; }
+            
+            .control-label { font-size: 13px; }
+            .control-value { font-size: 16px; }
+
+            .option-group {
+                flex-wrap: wrap;
+            }
+            .option {
+                font-size: 11px;
+                flex-basis: calc(50% - 10px); /* Two options per row */
+                margin-top: 5px;
+            }
+            .breed-name-display { font-size: 1.5em; }
+            #currentBreed { font-size: 1.2em; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="inputView" class="view">
+        <h1>Dynamic Data Interpolation Tool</h1>
+        <h2>Step 1: Provide Your Data</h2>
+        <div class="input-section">
+            <div class="input-box">
+                <h3>Upload a File</h3>
+                <p>Supports .csv and .xlsx files.</p>
+                <input type="file" id="fileInput" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                <label for="fileInput" id="file-upload-label">Select File</label>
+                <p id="fileName"></p>
+            </div>
+            <div class="input-box">
+                <h3>Or Paste Data</h3>
+                <p>Paste comma or tab-separated values below.</p>
+                <textarea id="pasteArea" placeholder="e.g.&#10;Name,TraitA,TraitB&#10;Item1,5,2&#10;Item2,1,8"></textarea>
+            </div>
+        </div>
+        <button id="processDataBtn" class="action-btn">Process Data</button>
+        <p id="input-error" style="color:red; text-align:center; margin-top:10px;"></p>
+    </div>
+
+    <div id="configView" class="view" style="display:none;">
+        <h1>Configuration</h1>
+        <h2>Step 2: Define Your Data Columns</h2>
+        <div id="config-options"></div>
+        <button id="generateToolBtn" class="action-btn">Generate Tool</button>
+    </div>
+
+    <div id="interactiveView" style="display:none;">
+        <div class="main-container">
+            <div class="left-column">
+                <div class="slider-section" id="personalityControls">
+                </div>
+                <div class="left-footer">
+                    <div class="left-footer-text">
+                        <div class="controls">
+                            <button id="lockToggle" class="off">LOCK SLIDERS: OFF</button>
+                        </div>
+                        <h2 id="currentBreed">RECOMMENDED: -</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="right-column">
+                <div id="behaviourControls">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-credit">
+        Made with <3 by Navaneeth Sankar K P -  [nave.ethan1337@gmail.com]
+    </footer>
+
+
+<script>
+    let rawData = [];
+    let headers = [];
+    let config = {};
+
+    // --- VIEW 1 LOGIC: INPUT ---
+    const processDataBtn = document.getElementById('processDataBtn');
+    const fileInput = document.getElementById('fileInput');
+    const pasteArea = document.getElementById('pasteArea');
+    const inputError = document.getElementById('input-error');
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+        pasteArea.value = ''; // Clear paste area if a file is chosen
+        
+        const reader = new FileReader();
+        if (file.name.endsWith('.csv')) {
+            reader.onload = (e) => handleParsedData(Papa.parse(e.target.result, { header: true, skipEmptyLines: true }).data);
+            reader.readAsText(file);
+        } else if (file.name.endsWith('.xlsx')) {
+            reader.onload = (e) => {
+                const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                handleParsedData(XLSX.utils.sheet_to_json(sheet));
+            };
+            reader.readAsBinaryString(file);
+        }
+    });
+
+    processDataBtn.addEventListener('click', () => {
+        inputError.textContent = '';
+        if (fileInput.files.length === 0 && pasteArea.value.trim() === '') {
+            inputError.textContent = 'Please upload a file or paste data.';
+            return;
+        }
+        if (pasteArea.value.trim() !== '') {
+            handleParsedData(Papa.parse(pasteArea.value, { header: true, skipEmptyLines: true }).data);
+        } else {
+            // This case is handled by the fileInput listener, but we re-trigger if needed
+            if (fileInput.files[0]) {
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+
+    function handleParsedData(data) {
+        if (!data || data.length === 0 || Object.keys(data[0]).length < 2) {
+            inputError.textContent = 'Invalid or empty data. Please provide at least one name column and one data column.';
+            return;
+        }
+        rawData = data.map(row => {
+            for(let key in row) {
+                if(!isNaN(row[key]) && row[key] !== null && row[key] !== '') {
+                    row[key] = parseFloat(row[key]);
+                }
+            }
+            return row;
+        });
+        headers = Object.keys(rawData[0]);
+        showConfigView();
+    }
+
+
+    // --- VIEW 2 LOGIC: CONFIGURATION ---
+    function showConfigView() {
+        document.getElementById('inputView').style.display = 'none';
+        const configView = document.getElementById('configView');
+        configView.style.display = 'block';
+
+        const configOptions = document.getElementById('config-options');
+        configOptions.innerHTML = '';
+
+        // Preset Name Column Selector
+        let nameSelectorHTML = `<div class="config-item"><label for="nameColumn">Preset Name Column:</label><select id="nameColumn">`;
+        headers.forEach(h => { nameSelectorHTML += `<option value="${h}">${h}</option>` });
+        nameSelectorHTML += `</select></div>`;
+        configOptions.innerHTML += nameSelectorHTML;
+        
+        // Data Column Types
+        let dataColumnsHTML = '<h3>Data Column Types:</h3>';
+        headers.forEach(h => {
+                dataColumnsHTML += `
+                    <div class="config-item" data-header="${h}">
+                        <label for="type-${h}">${h}:</label>
+                        <select id="type-${h}" class="column-type-selector">
+                            <option value="numerical">Numerical Slider</option>
+                            <option value="categorical">Categorical Options</option>
+                            <option value="ignore">Ignore Column</option>
+                        </select>
+                    </div>`;
+        });
+        configOptions.innerHTML += dataColumnsHTML;
+
+        // Auto-disable the name column from being a data column
+        const nameColumnSelector = document.getElementById('nameColumn');
+        const updateDisabledOption = () => {
+            const selectedName = nameColumnSelector.value;
+            document.querySelectorAll('.config-item[data-header]').forEach(item => {
+                item.style.display = 'flex';
+            });
+            const itemToHide = document.querySelector(`.config-item[data-header="${selectedName}"]`);
+            if (itemToHide) itemToHide.style.display = 'none';
+        };
+        nameColumnSelector.addEventListener('change', updateDisabledOption);
+        updateDisabledOption();
+    }
+
+    document.getElementById('generateToolBtn').addEventListener('click', () => {
+        config.nameColumn = document.getElementById('nameColumn').value;
+        config.numericalTraits = [];
+        config.categoricalTraits = [];
+        document.querySelectorAll('.column-type-selector').forEach(sel => {
+            const header = sel.id.replace('type-', '');
+            if(header !== config.nameColumn) {
+                if (sel.value === 'numerical') config.numericalTraits.push(header);
+                else if (sel.value === 'categorical') config.categoricalTraits.push(header);
+            }
+        });
+        
+        if (config.numericalTraits.length === 0 && config.categoricalTraits.length === 0) {
+            alert('Please select at least one Numerical or Categorical data column.');
+            return;
+        }
+
+        // --- FIX: Clean data to prevent calculation errors ---
+        const allDataTraits = [...config.numericalTraits, ...config.categoricalTraits];
+        allDataTraits.forEach(trait => {
+            // Calculate the average of valid numbers for the current trait column
+            const validValues = rawData.map(row => row[trait]).filter(v => typeof v === 'number' && !isNaN(v));
+            const isCategorical = config.categoricalTraits.includes(trait);
+            const defaultValue = isCategorical ? 3 : 0; // Default to 'Medium' for categorical, 0 for numerical
+            const average = validValues.length > 0 ? validValues.reduce((a, b) => a + b, 0) / validValues.length : defaultValue;
+
+            // Iterate through the rawData and replace any non-numeric or missing values
+            rawData.forEach(row => {
+                if (typeof row[trait] !== 'number' || isNaN(row[trait])) {
+                    console.warn(`Data issue in column '${trait}'. Replacing non-numeric value with default/average: ${average.toFixed(2)}`);
+                    row[trait] = average;
+                }
+            });
+        });
+        // --- End of Fix ---
+        
+        generateInteractiveTool();
+    });
+
+
+    // --- VIEW 3 LOGIC: INTERACTIVE TOOL ---
+    let lockMode = false;
+    let presetData = [];
+    let numericalState = [], categoricalState = [];
+    let numericalLocked = [], categoricalLocked = [];
+
+    function generateInteractiveTool() {
+        document.getElementById('configView').style.display = 'none';
+        document.getElementById('interactiveView').style.display = 'block';
+
+        // 1. Process data based on config (will use cleaned rawData)
+        presetData = rawData.map(row => {
+            return {
+                name: row[config.nameColumn],
+                numericalValues: config.numericalTraits.map(t => row[t]),
+                categoricalValues: config.categoricalTraits.map(t => row[t])
+            };
+        });
+
+        // 2. Initialize state
+        numericalState = [...presetData[0].numericalValues];
+        categoricalState = [...presetData[0].categoricalValues];
+        numericalLocked = Array(config.numericalTraits.length).fill(false);
+        categoricalLocked = Array(config.categoricalTraits.length).fill(false);
+        
+        const numericalContainer = document.getElementById("personalityControls");
+        const categoricalContainer = document.getElementById("behaviourControls");
+        numericalContainer.innerHTML = '';
+        categoricalContainer.innerHTML = '';
+        
+        // 3. Create controls
+        // Numerical Sliders
+        config.numericalTraits.forEach((trait, index) => {
+            const allVals = presetData.map(p => p.numericalValues[index]).filter(v => typeof v === 'number');
+            const min = Math.min(...allVals);
+            const max = Math.max(...allVals);
+            
+            const container = document.createElement("div");
+            container.className = "slider-container";
+            container.innerHTML = `
+                <div class="control-label">${trait}</div>
+                <div class="control-value">${numericalState[index].toFixed(2)}</div>
+                <input type="range" min="${min}" max="${max}" step="${(max-min)/100 || 0.01}" value="${numericalState[index]}" data-index="${index}">
+            `;
+            numericalContainer.appendChild(container);
+
+            const slider = container.querySelector('input');
+            const valueDisplay = container.querySelector('.control-value');
+            
+            slider.addEventListener("input", (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                numericalState[idx] = parseFloat(e.target.value);
+                valueDisplay.textContent = numericalState[idx].toFixed(2);
+                updateSliderFill(e.target);
+                updateInterpolatedState("numerical", idx);
+            });
+            slider.addEventListener("blur", (e) => {
+                if (lockMode) {
+                    numericalLocked[parseInt(e.target.dataset.index)] = true;
+                }
+            });
+        });
+        document.querySelectorAll('#personalityControls input[type="range"]').forEach(updateSliderFill);
+
+        // Categorical Options
+        if (config.categoricalTraits.length > 0) {
+            const behaviourOptions = ["Very Low", "Low", "Medium", "High", "Very High"];
+            const values = [1,2,3,4,5];
+
+            config.categoricalTraits.forEach((trait, index) => {
+                const row = document.createElement("div");
+                row.className = "behaviour-row";
+                row.innerHTML = `<div class="control-label">${trait}</div>`;
+                
+                const optionGroup = document.createElement("div");
+                optionGroup.className = "option-group";
+
+                values.forEach((val, i) => {
+                    const option = document.createElement("div");
+                    option.className = "option";
+                    option.textContent = behaviourOptions[i];
+                    option.dataset.row = index;
+                    option.dataset.value = val;
+                    if (val === Math.round(categoricalState[index])) option.classList.add("selected");
+                    
+                    option.addEventListener("click", (e) => {
+                        const rowIndex = parseInt(e.target.dataset.row);
+                        categoricalState[rowIndex] = parseInt(e.target.dataset.value);
+                        Array.from(optionGroup.children).forEach(child => child.classList.remove("selected"));
+                        e.target.classList.add("selected");
+                        
+                        if (lockMode) {
+                            categoricalLocked[rowIndex] = true;
+                        }
+                        updateInterpolatedState("categorical", rowIndex);
+                    });
+                    optionGroup.appendChild(option);
+                });
+                row.appendChild(optionGroup);
+                categoricalContainer.appendChild(row);
+            });
+        }
+        
+        // 4. Setup lock button
+        const lockToggleBtn = document.getElementById("lockToggle");
+        lockToggleBtn.addEventListener("click", () => {
+            lockMode = !lockMode;
+            lockToggleBtn.textContent = `LOCK SLIDERS: ${lockMode ? 'ON' : 'OFF'}`;
+            lockToggleBtn.classList.toggle("on", lockMode);
+            lockToggleBtn.classList.toggle("off", !lockMode);
+            if (!lockMode) { // Reset locks when turning off
+                numericalLocked.fill(false);
+                categoricalLocked.fill(false);
+            }
+        });
+
+        // 5. Initial UI update
+        updateCombinedBreed();
+    }
+    
+    // --- CORE LOGIC ---
+    function updateSliderFill(slider) {
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        const val = parseFloat(slider.value);
+        const percent = (max > min) ? (val - min) / (max - min) * 100 : 0;
+        slider.style.setProperty('--value-percent', `${percent}%`);
+    }
+
+    function sqDistance(arrA, arrB) {
+        return arrA.reduce((acc, val, i) => {
+            const term = (val - arrB[i]);
+            return acc + (term * term);
+        }, 0);
+    }
+
+    function updateInterpolatedState(changedSection, changedIndex) {
+        const epsilon = 0.01;
+        const alpha = 1.0; 
+
+        const weights = presetData.map(preset => {
+            const dNumerical = config.numericalTraits.length > 0 ? sqDistance(numericalState, preset.numericalValues) : 0;
+            const dCategorical = config.categoricalTraits.length > 0 ? sqDistance(categoricalState, preset.categoricalValues) : 0;
+            const combinedDist = dNumerical + alpha * dCategorical;
+            return 1 / (combinedDist + epsilon);
+        });
+
+        const weightSum = weights.reduce((a, b) => a + b, 0);
+        if (weightSum === 0) return;
+        const normalizedWeights = weights.map(w => w / weightSum);
+
+        let interpolatedNumerical = config.numericalTraits.map((_, j) => 
+            presetData.reduce((acc, preset, k) => acc + normalizedWeights[k] * preset.numericalValues[j], 0)
+        );
+        let interpolatedCategorical = config.categoricalTraits.map((_, j) => 
+            presetData.reduce((acc, preset, k) => acc + normalizedWeights[k] * preset.categoricalValues[j], 0)
+        );
+        
+        const newNumerical = interpolatedNumerical.map((interpValue, i) => {
+            const isActive = changedSection === 'numerical' && i === changedIndex;
+            if (numericalLocked[i] || isActive) {
+                return numericalState[i];
+            }
+            return interpValue;
+        });
+
+        const newCategorical = interpolatedCategorical.map((interpValue, i) => {
+            const isActive = changedSection === 'categorical' && i === changedIndex;
+            if (categoricalLocked[i] || isActive) {
+                return categoricalState[i];
+            }
+            return interpValue;
+        });
+        
+        numericalState = newNumerical;
+        categoricalState = newCategorical;
+
+        updateCombinedBreed();
+        updateNumericalUI();
+        updateCategoricalUI();
+    }
+    
+    function updateCombinedBreed() {
+        let bestMatch = presetData[0];
+        let bestDist = Infinity;
+
+        presetData.forEach((preset) => {
+            const dNumerical = config.numericalTraits.length > 0 ? sqDistance(numericalState, preset.numericalValues) : 0;
+            const dCategorical = config.categoricalTraits.length > 0 ? sqDistance(categoricalState, preset.categoricalValues) : 0;
+            const d = dNumerical + dCategorical;
+            if (d < bestDist) {
+                bestDist = d;
+                bestMatch = preset;
+            }
+        });
+        document.getElementById("currentBreed").innerHTML = `RECOMMENDED:<br><span class='breed-name-display'>${bestMatch.name}</span>`;
+    }
+
+    function updateNumericalUI() {
+        const containers = document.querySelectorAll("#personalityControls .slider-container");
+        containers.forEach((container, index) => {
+            if (numericalLocked[index]) return;
+            const slider = container.querySelector("input[type='range']");
+            const valueDisplay = container.querySelector(".control-value");
+            slider.value = numericalState[index];
+            valueDisplay.textContent = numericalState[index].toFixed(2);
+            updateSliderFill(slider);
+        });
+    }
+
+    function updateCategoricalUI() {
+        const rows = document.querySelectorAll("#behaviourControls .behaviour-row");
+        rows.forEach((row, index) => {
+            if (categoricalLocked[index]) return;
+            const optionGroup = row.querySelector(".option-group");
+            const displayedVal = Math.round(categoricalState[index]);
+            Array.from(optionGroup.children).forEach(option => {
+                option.classList.toggle("selected", parseInt(option.dataset.value) === displayedVal);
+            });
+        });
+    }
+
+</script>
+
+</body>
+</html>
