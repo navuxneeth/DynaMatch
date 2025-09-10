@@ -69,3 +69,24 @@ Since this is a self-contained HTML file with no server-side dependencies, you c
 -   Built by Navaneeth Sankar K P (https://www.linkedin.com/in/navaneeth-sankar-k-p) .
 -   Uses [PapaParse.js](https://www.papaparse.com/) for CSV parsing.
 -   Uses [SheetJS (xlsx.js)](https://sheetjs.com/) for Excel file parsing.
+
+## Copyright and License Notice
+
+Copyright © 2025 Navaneeth Sankar K P
+ORCID: [https://orcid.org/0009-0001-9901-7245](https://orcid.org/0009-0001-9901-7245)
+
+All rights reserved.
+
+This repository and its contents are the intellectual property of **Navaneeth Sankar K P**.  
+Viewing of this source code is permitted for reference and personal academic purposes **only**.
+
+No part of this repository may be copied, redistributed, used in derivative works, or exploited for commercial or non-commercial use, in whole or in part, without the explicit written permission of the copyright holder.
+
+The author reserves the right to pursue a patent for the ideas, algorithms, or implementations contained herein.  
+Any unauthorized use, distribution, or reproduction may be subject to legal action.
+
+For permission requests, inquiries, or possible collaboration, contact me through:
+**Name:** Navaneeth Sankar Kodavamparambil Pradeep  
+**Email:** nave.ethan1337@gmail.com  
+
+---
