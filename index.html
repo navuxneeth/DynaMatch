@@ -316,6 +316,39 @@
             color: var(--bg-color);
         }
 
+        /* Preset buttons list */
+        .preset-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 5px 0 12px 0;
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            border-radius: 5px;
+        }
+        .preset-button {
+            padding: 6px 10px;
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            border: 1px solid var(--secondary-color);
+            background: var(--surface-color);
+            color: var(--secondary-color);
+            border-radius: 4px;
+            user-select: none;
+            transition: background .15s ease, color .15s ease, transform .1s ease;
+        }
+        .preset-button:hover { background: var(--accent-hover); color: #fff; }
+        .preset-button.active {
+            background: var(--secondary-color);
+            color: #fff;
+            box-shadow: 0 0 0 2px var(--accent-color) inset;
+            transform: translateY(-2px);
+        }
+
         .control-label {
             font-size: 14px;
             margin-bottom: 5px;
@@ -517,6 +550,7 @@
     <div id="interactiveView" style="display:none;">
         <div class="main-container">
             <div class="left-column">
+                <div id="presetButtons" class="preset-buttons-container" aria-label="Preset List (click to apply)"></div>
                 <div class="slider-section" id="personalityControls">
                 </div>
                 <div class="left-footer">
@@ -729,6 +763,7 @@
     let presetData = [];
     let numericalState = [], categoricalState = [];
     let numericalLocked = [], categoricalLocked = [];
+    let presetButtonElements = [];
 
     function generateInteractiveTool() {
         document.getElementById('configView').style.display = 'none';
@@ -840,8 +875,11 @@
             }
         });
 
-        // 5. Initial UI update
-        updateCombinedBreed();
+    // 4b. Build preset buttons now that data is ready
+    buildPresetButtons();
+
+    // 5. Initial UI update
+    updateCombinedBreed();
     }
     
     // --- CORE LOGIC ---
@@ -909,17 +947,58 @@
     function updateCombinedBreed() {
         let bestMatch = presetData[0];
         let bestDist = Infinity;
+        let bestIndex = 0;
 
-        presetData.forEach((preset) => {
+        presetData.forEach((preset, idx) => {
             const dNumerical = config.numericalTraits.length > 0 ? sqDistance(numericalState, preset.numericalValues) : 0;
             const dCategorical = config.categoricalTraits.length > 0 ? sqDistance(categoricalState, preset.categoricalValues) : 0;
             const d = dNumerical + dCategorical;
             if (d < bestDist) {
                 bestDist = d;
                 bestMatch = preset;
+                bestIndex = idx;
             }
         });
         document.getElementById("currentBreed").innerHTML = `RECOMMENDED:<br><span class='breed-name-display'>${bestMatch.name}</span>`;
+        highlightPresetButton(bestIndex);
+    }
+
+    function buildPresetButtons(){
+        const container = document.getElementById('presetButtons');
+        if(!container) return;
+        container.innerHTML = '';
+        presetButtonElements = presetData.map((preset, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preset-button';
+            btn.textContent = preset.name;
+            btn.dataset.index = idx;
+            btn.addEventListener('click', () => applyPreset(idx));
+            container.appendChild(btn);
+            return btn;
+        });
+    }
+
+    function highlightPresetButton(activeIdx){
+        if(!presetButtonElements) return;
+        presetButtonElements.forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === activeIdx);
+        });
+    }
+
+    function applyPreset(idx){
+        const preset = presetData[idx];
+        if(!preset) return;
+        // Apply values only to unlocked entries
+        config.numericalTraits.forEach((_, i) => {
+            if(!numericalLocked[i]) numericalState[i] = preset.numericalValues[i];
+        });
+        config.categoricalTraits.forEach((_, i) => {
+            if(!categoricalLocked[i]) categoricalState[i] = preset.categoricalValues[i];
+        });
+        updateNumericalUI();
+        updateCategoricalUI();
+        updateCombinedBreed();
     }
 
     function updateNumericalUI() {
