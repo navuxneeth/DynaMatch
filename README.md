@@ -17,6 +17,8 @@ A browser-based tool that takes numerical and categorical data (from a CSV/XLSX 
 -   **Preset Matching**: Always recommends the closest "real" data point from your original dataset based on your current settings.
 -   **Fully Client-Side**: All processing happens in your browser. Your data is never uploaded to a server.
 -   **Responsive Design**: Usable on both desktop and mobile devices.
+-   **8-Bit Retro Styling**: Modern interface with pixel-perfect 8-bit aesthetic and Orbitron font.
+-   **Theme Toggle**: Switch between light and dark themes with persistent preference storage.
 
 ## How to Use
 
@@ -34,6 +36,7 @@ A browser-based tool that takes numerical and categorical data (from a CSV/XLSX 
     -   Click **"Generate Tool"**.
 
 3.  **Step 3: Interact with the Tool**
+    -   **Theme Toggle**: Use the 🌙/☀️ button in the top-right corner to switch between light and dark themes. Your preference is automatically saved.
     -   **Adjust Sliders**: Drag the sliders for numerical traits.
     -   **Select Options**: Click the buttons for categorical traits.
     -   **Observe Changes**: As you change one value, all other unlocked values will adjust automatically.

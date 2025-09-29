@@ -121,19 +121,33 @@
         .input-box {
             flex: 1;
             padding: 20px;
-            border: 2px dashed var(--medium-gray);
-            border-radius: 8px;
+            border: 3px solid var(--border-color);
+            border-radius: 0;
             text-align: center;
+            background: var(--surface-color);
+            transition: border-color 0.3s ease;
+        }
+        .input-box:hover {
+            border-color: var(--accent-color);
         }
 
         textarea#pasteArea {
             width: 95%;
             height: 200px;
             margin-top: 10px;
-            border-radius: 4px;
-            border: 1px solid var(--medium-gray);
-            font-family: monospace;
+            border-radius: 0;
+            border: 2px solid var(--border-color);
+            background: var(--surface-color);
+            color: var(--text-color);
+            font-family: 'Courier Prime', 'Courier New', monospace;
             font-size: 12px;
+            padding: 10px;
+            transition: border-color 0.3s ease;
+        }
+        textarea#pasteArea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--accent-color);
         }
 
         button.action-btn {
@@ -143,33 +157,51 @@
             margin: 20px auto 0;
             padding: 15px 20px;
             font-size: 1.2em;
+            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-weight: 700;
             cursor: pointer;
-            border-radius: 5px;
-            border: none;
+            border-radius: 0;
+            border: 3px solid var(--accent-color);
             background: var(--primary-color);
-            color: #fff;
+            color: var(--surface-color);
             text-transform: uppercase;
-            transition: background-color 0.3s;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0px var(--accent-color);
         }
         button.action-btn:hover {
-            background-color: #e56a62;
+            background: var(--accent-color);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--primary-color);
         }
         button.action-btn:disabled {
-            background-color: var(--medium-gray);
+            background: var(--medium-gray);
+            border-color: var(--dark-gray);
+            box-shadow: 4px 4px 0px var(--dark-gray);
             cursor: not-allowed;
+            transform: none;
         }
         
         #file-upload-label {
             display: inline-block;
             padding: 12px 25px;
-            background-color: var(--secondary-color);
-            color: white;
-            border-radius: 5px;
+            background: var(--secondary-color);
+            color: var(--surface-color);
+            border-radius: 0;
+            border: 2px solid var(--accent-color);
             cursor: pointer;
             font-size: 1em;
+            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 3px 3px 0px var(--accent-color);
+            transition: all 0.2s ease;
         }
         #file-upload-label:hover {
-            opacity: 0.9;
+            background: var(--accent-color);
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px var(--secondary-color);
         }
         #fileInput { display: none; }
         #fileName {
