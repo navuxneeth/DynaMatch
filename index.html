@@ -4,29 +4,51 @@
     <meta charset="UTF-8">
     <title>Dynamic Data Interpolation Tool</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
-            --bg-color: rgb(254, 244, 232);
-            --text-color: rgb(27, 41, 64);
-            --primary-color: rgb(239, 137, 131);
-            --secondary-color: rgb(67, 111, 133);
-            --light-gray: #f0f0f0;
-            --medium-gray: #ccc;
-            --dark-gray: #333;
+            /* Light theme (default) */
+            --bg-color: #f0f0f0;
+            --text-color: #1a1a1a;
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --accent-color: #45b7d1;
+            --surface-color: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --light-gray: #f8f8f8;
+            --medium-gray: #cccccc;
+            --dark-gray: #666666;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0a0a0a;
+            --text-color: #00ff00;
+            --primary-color: #ff00ff;
+            --secondary-color: #00ffff;
+            --accent-color: #ffff00;
+            --surface-color: #1a1a1a;
+            --border-color: #333333;
+            --shadow-color: rgba(0, 255, 0, 0.2);
+            --light-gray: #2a2a2a;
+            --medium-gray: #555555;
+            --dark-gray: #888888;
         }
 
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            font-family: 'Fredoka', sans-serif;
+            font-family: 'Orbitron', 'Courier Prime', 'Courier New', monospace;
+            font-weight: 400;
             background: var(--bg-color);
             color: var(--text-color);
             text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* --- View Containers --- */
@@ -34,9 +56,11 @@
             padding: 20px;
             max-width: 900px;
             margin: 40px auto;
-            background: #fff;
+            background: var(--surface-color);
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
         #interactiveView {
             max-width: 1200px;
@@ -44,6 +68,39 @@
             background: transparent;
             box-shadow: none;
             margin-top: 10px;
+            border: none;
+        }
+
+        /* --- Header Section with Theme Toggle --- */
+        .header-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--secondary-color);
+            color: var(--surface-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
         }
 
         /* --- Input & Config View Styling --- */
@@ -64,19 +121,33 @@
         .input-box {
             flex: 1;
             padding: 20px;
-            border: 2px dashed var(--medium-gray);
-            border-radius: 8px;
+            border: 3px solid var(--border-color);
+            border-radius: 0;
             text-align: center;
+            background: var(--surface-color);
+            transition: border-color 0.3s ease;
+        }
+        .input-box:hover {
+            border-color: var(--accent-color);
         }
 
         textarea#pasteArea {
             width: 95%;
             height: 200px;
             margin-top: 10px;
-            border-radius: 4px;
-            border: 1px solid var(--medium-gray);
-            font-family: monospace;
+            border-radius: 0;
+            border: 2px solid var(--border-color);
+            background: var(--surface-color);
+            color: var(--text-color);
+            font-family: 'Courier Prime', 'Courier New', monospace;
             font-size: 12px;
+            padding: 10px;
+            transition: border-color 0.3s ease;
+        }
+        textarea#pasteArea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--accent-color);
         }
 
         button.action-btn {
@@ -86,33 +157,51 @@
             margin: 20px auto 0;
             padding: 15px 20px;
             font-size: 1.2em;
+            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-weight: 700;
             cursor: pointer;
-            border-radius: 5px;
-            border: none;
+            border-radius: 0;
+            border: 3px solid var(--accent-color);
             background: var(--primary-color);
-            color: #fff;
+            color: var(--surface-color);
             text-transform: uppercase;
-            transition: background-color 0.3s;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0px var(--accent-color);
         }
         button.action-btn:hover {
-            background-color: #e56a62;
+            background: var(--accent-color);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--primary-color);
         }
         button.action-btn:disabled {
-            background-color: var(--medium-gray);
+            background: var(--medium-gray);
+            border-color: var(--dark-gray);
+            box-shadow: 4px 4px 0px var(--dark-gray);
             cursor: not-allowed;
+            transform: none;
         }
         
         #file-upload-label {
             display: inline-block;
             padding: 12px 25px;
-            background-color: var(--secondary-color);
-            color: white;
-            border-radius: 5px;
+            background: var(--secondary-color);
+            color: var(--surface-color);
+            border-radius: 0;
+            border: 2px solid var(--accent-color);
             cursor: pointer;
             font-size: 1em;
+            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 3px 3px 0px var(--accent-color);
+            transition: all 0.2s ease;
         }
         #file-upload-label:hover {
-            opacity: 0.9;
+            background: var(--accent-color);
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px var(--secondary-color);
         }
         #fileInput { display: none; }
         #fileName {
@@ -369,7 +458,10 @@
 <body>
 
     <div id="inputView" class="view">
-        <h1>Dynamic Data Interpolation Tool</h1>
+        <div class="header-section">
+            <h1>Dynamic Data Interpolation Tool</h1>
+            <button id="themeToggle" class="theme-toggle" title="Toggle Theme">🌓</button>
+        </div>
         <h2>Step 1: Provide Your Data</h2>
         <div class="input-section">
             <div class="input-box">
@@ -423,6 +515,32 @@
 
 
 <script>
+    // --- THEME TOGGLE FUNCTIONALITY ---
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    // Load saved theme or default to light
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', currentTheme);
+
+    // Update toggle button based on current theme
+    function updateThemeToggle() {
+        const currentTheme = html.getAttribute('data-theme');
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        themeToggle.title = `Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} theme`;
+    }
+
+    updateThemeToggle();
+
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeToggle();
+    });
+
     let rawData = [];
     let headers = [];
     let config = {};
