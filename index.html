@@ -249,12 +249,13 @@
             display: flex;
             flex-direction: column;
             padding: 10px;
-            border: 1px solid #ddd;
-            background: #fafafa;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
             border-radius: 5px;
             box-sizing: border-box;
             max-height: 100%;
             min-height: 0; /* Fix for flexbox shrinking */
+            color: var(--bg-color); /* Force text inside to use background colour for contrast request */
         }
 
         .slider-section, #behaviourControls {
@@ -300,23 +301,25 @@
             border: 1px solid var(--medium-gray);
             border-radius: 5px;
             background: #fff;
+            color: var(--bg-color);
         }
 
         .control-label {
             font-size: 14px;
             margin-bottom: 5px;
             font-weight: bold;
-            color: var(--text-color);
+            color: var(--bg-color); /* match background colour per requirement */
         }
 
         .control-value {
             font-size: 18px;
             margin-bottom: 5px;
-            color: var(--text-color);
+            color: var(--bg-color); /* match background colour */
         }
 
         input[type="range"] {
             width: 100%;
+            appearance: none;
             -webkit-appearance: none;
             background: transparent;
             cursor: pointer;
@@ -383,6 +386,11 @@
             color: #fff;
             border: 1px solid var(--secondary-color);
         }
+
+        /* Exempt specific headings from forced background colour */
+        #currentBreed, #currentBreed .breed-name-display, button#lockToggle { color: var(--secondary-color); }
+        /* Keep Recommended: NAME and lock text original as per instructions */
+        #currentBreed { color: var(--secondary-color); }
 
         /* Footer Credit */
         .footer-credit {
@@ -485,7 +493,10 @@
     </div>
 
     <div id="configView" class="view" style="display:none;">
-        <h1>Configuration</h1>
+        <div class="header-section">
+            <h1>Configuration</h1>
+            <button id="themeToggleConfig" class="theme-toggle" title="Toggle Theme">🌓</button>
+        </div>
         <h2>Step 2: Define Your Data Columns</h2>
         <div id="config-options"></div>
         <button id="generateToolBtn" class="action-btn">Generate Tool</button>
@@ -510,6 +521,7 @@
                 </div>
             </div>
         </div>
+        <button id="themeToggleInteractive" class="theme-toggle" style="position:fixed; top:10px; left:10px; width:42px; height:42px;" title="Toggle Theme">🌓</button>
     </div>
 
     <footer class="footer-credit">
@@ -520,6 +532,8 @@
 <script>
     // --- THEME TOGGLE FUNCTIONALITY ---
     const themeToggle = document.getElementById('themeToggle');
+    const themeToggleConfig = document.getElementById('themeToggleConfig');
+    const themeToggleInteractive = document.getElementById('themeToggleInteractive');
     const html = document.documentElement;
 
     // Load saved theme or default to light
@@ -535,14 +549,18 @@
 
     updateThemeToggle();
 
-    themeToggle.addEventListener('click', () => {
+    function flipTheme(){
         const currentTheme = html.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeToggle();
-    });
+    }
+
+    themeToggle.addEventListener('click', flipTheme);
+    themeToggleConfig && themeToggleConfig.addEventListener('click', flipTheme);
+    themeToggleInteractive && themeToggleInteractive.addEventListener('click', flipTheme);
 
     let rawData = [];
     let headers = [];
