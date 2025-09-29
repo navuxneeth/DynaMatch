@@ -4,45 +4,48 @@
     <meta charset="UTF-8">
     <title>Dynamic Data Interpolation Tool</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
-            /* Light theme (default) */
-            --bg-color: #f0f0f0;
-            --text-color: #1a1a1a;
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --accent-color: #45b7d1;
-            --surface-color: #ffffff;
-            --border-color: #e0e0e0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --light-gray: #f8f8f8;
-            --medium-gray: #cccccc;
-            --dark-gray: #666666;
+            /* Light Original ("PixelOS") theme */
+            --bg-color: #283238;
+            --text-color: #B6C2BF;
+            --primary-color: #6AB0A2;
+            --secondary-color: #6AB0A2;
+            --accent-color: #6AB0A2;
+            --accent-hover: #548C7F;
+            --surface-color: #38454C;
+            --border-color: #38454C;
+            --shadow-color: rgba(182, 194, 191, 0.2);
+            --light-gray: #38454C;
+            --medium-gray: #38454C;
+            --dark-gray: #283238;
         }
 
         [data-theme="dark"] {
-            --bg-color: #0a0a0a;
-            --text-color: #00ff00;
-            --primary-color: #ff00ff;
-            --secondary-color: #00ffff;
-            --accent-color: #ffff00;
-            --surface-color: #1a1a1a;
-            --border-color: #333333;
-            --shadow-color: rgba(0, 255, 0, 0.2);
-            --light-gray: #2a2a2a;
-            --medium-gray: #555555;
-            --dark-gray: #888888;
+            /* Blue ("Ocean") theme */
+            --bg-color: #1a3a4a;
+            --text-color: #a6c3d1;
+            --primary-color: #4aa9d5;
+            --secondary-color: #4aa9d5;
+            --accent-color: #4aa9d5;
+            --accent-hover: #3b87ab;
+            --surface-color: #2a5b74;
+            --border-color: #2a5b74;
+            --shadow-color: rgba(166, 195, 209, 0.2);
+            --light-gray: #2a5b74;
+            --medium-gray: #2a5b74;
+            --dark-gray: #1a3a4a;
         }
 
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            font-family: 'Orbitron', 'Courier Prime', 'Courier New', monospace;
+            font-family: 'VT323', monospace;
             font-weight: 400;
             background: var(--bg-color);
             color: var(--text-color);
@@ -98,7 +101,7 @@
         }
 
         .theme-toggle:hover {
-            background: var(--accent-color);
+            background: var(--accent-hover);
             transform: translateY(-50%) scale(1.1);
             box-shadow: 0 4px 12px var(--shadow-color);
         }
@@ -139,7 +142,7 @@
             border: 2px solid var(--border-color);
             background: var(--surface-color);
             color: var(--text-color);
-            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-family: 'VT323', monospace;
             font-size: 12px;
             padding: 10px;
             transition: border-color 0.3s ease;
@@ -157,7 +160,7 @@
             margin: 20px auto 0;
             padding: 15px 20px;
             font-size: 1.2em;
-            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-family: 'VT323', monospace;
             font-weight: 700;
             cursor: pointer;
             border-radius: 0;
@@ -170,7 +173,7 @@
             box-shadow: 4px 4px 0px var(--accent-color);
         }
         button.action-btn:hover {
-            background: var(--accent-color);
+            background: var(--accent-hover);
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0px var(--primary-color);
         }
@@ -191,7 +194,7 @@
             border: 2px solid var(--accent-color);
             cursor: pointer;
             font-size: 1em;
-            font-family: 'Orbitron', 'Courier Prime', monospace;
+            font-family: 'VT323', monospace;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -199,7 +202,7 @@
             transition: all 0.2s ease;
         }
         #file-upload-label:hover {
-            background: var(--accent-color);
+            background: var(--accent-hover);
             transform: translate(1px, 1px);
             box-shadow: 2px 2px 0px var(--secondary-color);
         }
