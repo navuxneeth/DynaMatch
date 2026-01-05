@@ -17,7 +17,7 @@ A browser-based tool that takes numerical and categorical data (from a CSV/XLSX 
 -   **Preset Matching**: Always recommends the closest "real" data point from your original dataset based on your current settings.
 -   **Fully Client-Side**: All processing happens in your browser. Your data is never uploaded to a server.
 -   **Responsive Design**: Usable on both desktop and mobile devices.
--   **Styling**: Modern interface using the Open Sans font.
+-   **Styling**: Clean, modern design using the readable Open Sans font for better accessibility.
 -   **Theme Toggle**: Switch between light and dark themes with persistent preference storage.
 
 ## How to Use
